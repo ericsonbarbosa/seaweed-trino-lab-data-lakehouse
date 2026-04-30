@@ -1,0 +1,18 @@
+---
+- name: "Configuração da Infraestrutura de Dados"
+  hosts: all
+  become: yes
+  roles:
+    - common
+
+- name: "Configuração do Storage e Catálogo (VM 1)"
+  hosts: storage
+  become: yes
+  roles:
+    - postgres
+
+#- name: "Configuração do Motor de Consulta (VM 2)"
+#  hosts: compute
+#  become: yes
+#  roles:
+#    - trino
