@@ -1,0 +1,15 @@
+[Unit]
+Description=SeaweedFS S3 Gateway
+After=seaweedfs-filer.service
+
+[Service]
+User={{ seaweedfs_user }}
+Group={{ seaweedfs_group }}
+ExecStart=/usr/local/bin/weed s3 \
+  -port={{ seaweedfs_s3_port }} \
+  -filer={{ seaweedfs_master_host }}:{{ seaweedfs_filer_port }}
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

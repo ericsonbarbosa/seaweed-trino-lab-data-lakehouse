@@ -25,7 +25,7 @@ sleep 5
 echo "⚙️  Executando a orquestração com Ansible..."
 export ANSIBLE_HOST_KEY_CHECKING=False
 
-# 2. Verificação e atualização das chaves SSH para o WSL
+# 2. Verificação e atualização das chaves SSH para dentro do WSL
 echo "🔑 Verificando chaves SSH das VMs..."
 mkdir -p /home/ericson/.ssh/seaweed_lab
 

@@ -1,10 +1,16 @@
-# 1. Criar uma pasta segura para as chaves no seu usuário Linux
-mkdir -p ~/.ssh/seaweed_lab
+### Ambiente WSL - Passar as chaves SSH do .vagrant(Windows) para o WSL(Linux)
 
-# 2. Copiar as chaves do Windows para essa pasta Linux
-cp .vagrant/machines/seaweedfs-node/virtualbox/private_key ~/.ssh/seaweed_lab/key_seaweed
-cp .vagrant/machines/trino-sea-node/virtualbox/private_key ~/.ssh/seaweed_lab/key_trino
+Automatizamos com a execução da task 2 (dois) do setup.sh. A mesma deve ser ajustada (corrija o nome do usuário WSL) ou comentada (caso esteja rodando no Linux puro).
 
-# 3. DAR A PERMISSÃO CORRETA (Isso agora vai funcionar!)
-chmod 600 ~/.ssh/seaweed_lab/key_seaweed
-chmod 600 ~/.ssh/seaweed_lab/key_trino
+Local: setup.sh/ # 2. Verificação e atualização das chaves SSH para dentro do WSL.
+Ex: DEST="/home/AJUSTE_AQUI/.ssh/seaweed_lab/$KEY_NAME"
+
+---
+
+## Verificação dos serviços SeaweedFS
+
+Abra o seu navegador no Windows e acesse:  
+
+Painel do Master: http://192.168.56.101:9333  (status do cluster e quantos "Volumes" estão ativos.)
+Interface do Filer: http://192.168.56.101:8888  (Este é o seu "Google Drive" interno)  
+S3 Gateway: http://192.168.56.101:8333 (Deve retornar uma mensagem XML)  
