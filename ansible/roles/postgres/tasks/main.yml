@@ -1,4 +1,7 @@
 ---
+# ==============================================================================
+# 1. INSTALAÇÃO DO POSTGRESQL E SERVIÇO
+# ==============================================================================
 - name: "Postgres : Instalar PostgreSQL"
   apt:
     name: postgresql
@@ -12,6 +15,9 @@
     enabled: yes
   become: yes
 
+# ==============================================================================
+# 2. DIRETÓRIO TEMPORÁRIO PARA EXECUÇÃO REMOTA DO ANSIBLE
+# ==============================================================================
 - name: "postgres : Criar diretório tmp para execução remota do Ansible"
   file:
     path: /var/lib/postgresql/.ansible/tmp
@@ -21,22 +27,39 @@
     mode: '0755'
   become: yes
 
+# ==============================================================================
+# 3. CRIAÇÃO DO BANCO DE DADOS E USUÁRIO PARA O HIVE METASTORE
+# ==============================================================================
 - name: "Postgres : Criar banco de dados para o Hive Metastore"
   become: yes
   become_user: postgres
   postgresql_db:
     name: metastore
 
-- name: "Postgres : Criar usuário 'hive' com permissões"
+- name: "Postgres : Criar usuário 'hive' e definir senha"
   become: yes
   become_user: postgres
   no_log: true
   postgresql_user:
-    db: metastore
     name: hive
     password: hive_password
-    priv: "ALL"
+    encrypted: yes
+    state: present
 
+- name: "Postgres : Garantir privilégios 'ALL' no banco 'metastore' para o usuário 'hive'"
+  become: yes
+  become_user: postgres
+  postgresql_privs:
+    db: postgres       # Banco usado apenas para conectar e rodar o comando
+    objs: metastore    # Nome do banco de dados alvo
+    type: database     # Tipo do objeto que receberá o privilégio
+    role: hive         # Usuário que está recebendo o poder
+    privs: ALL         # Nível de privilégio
+    state: present
+
+# ==============================================================================
+# 4. CONFIGURAÇÕES DE ACESSO EXTERNO (NECESSÁRIAS PARA O HMS)
+# ==============================================================================
 - name: "Postgres : Configurar acesso externo (necessário para o HMS)"
   lineinfile:
     path: /etc/postgresql/14/main/pg_hba.conf

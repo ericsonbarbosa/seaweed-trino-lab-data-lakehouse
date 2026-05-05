@@ -21,3 +21,10 @@
 #  roles:
 #    - role: trino
 #      tags: trino
+
+- name: "Configuração do Nó Kubernetes (VM 3)"
+  hosts: k8s
+  become: yes
+  roles:
+    - role: k8s-seaweed-csi
+      tags: k8s-seaweed-csi

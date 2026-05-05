@@ -3,18 +3,23 @@
 # Encerra o script em caso de erro
 set -e
 
-# Caminho absoluto para o executável do Windows no WSL
-VAGRANT="/mnt/c/Program\ Files\ \(x86\)/Vagrant/bin/vagrant.exe"
+# --- AJUSTE DE PORTABILIDADE ---
+# Usamos a variável $USER para o nome do usuário e $HOME para o caminho da home
+CURRENT_USER=$USER
+MY_HOME=$HOME
+# -------------------------------
 
-echo "🔍 Verificando o status das máquinas virtuais..."
+# Caminho absoluto para o executável do Windows no WSL (adicionado aspas para evitar erros de espaço)
+VAGRANT="/mnt/c/Program Files (x86)/Vagrant/bin/vagrant.exe"
+
+echo "🔍 Olá $CURRENT_USER, verificando o status das máquinas virtuais..."
 
 # 1. Checagem de Status
-# Usamos eval para que o Bash interprete corretamente os espaços no caminho do Windows
-VM_STATUS=$(eval "$VAGRANT status --machine-readable" | tr -d "\r" | grep ",state," | cut -d',' -f4)
+VM_STATUS=$(eval "\"$VAGRANT\" status --machine-readable" | tr -d "\r" | grep ",state," | cut -d',' -f4)
 
 if echo "$VM_STATUS" | grep -qv "running"; then
     echo "pit stop 🛑 Algumas VMs estão desligadas ou não criadas. Iniciando..."
-    eval "$VAGRANT up --no-provision"
+    eval "\"$VAGRANT\" up --no-provision"
 else
     echo "✅ VMs já estão em execução. Pulando o boot."
 fi
@@ -27,22 +32,25 @@ export ANSIBLE_HOST_KEY_CHECKING=False
 
 # 2. Verificação e atualização das chaves SSH para dentro do WSL
 echo "🔑 Verificando chaves SSH das VMs..."
-mkdir -p /home/ericson/.ssh/seaweed_lab
+# USANDO $MY_HOME em vez de caminho fixo
+SSH_DIR="$MY_HOME/.ssh/seaweed_lab"
+mkdir -p "$SSH_DIR"
 
 # Converte path Windows para path WSL
 windows_to_wsl() {
   echo "$1" | sed 's|\\|/|g' | sed 's|^\([A-Za-z]\):|/mnt/\L\1|'
 }
 
-for VM in "seaweedfs-node:key_seaweed" "trino-sea-node:key_trino"; do
+# Adicionei a VM3 (k8s-node) que planejamos anteriormente na lista
+for VM in "seaweedfs-node:key_seaweed" "trino-sea-node:key_trino" "k8s-node:key_k8s"; do
   VM_NAME="${VM%%:*}"
   KEY_NAME="${VM##*:}"
-  DEST="/home/ericson/.ssh/seaweed_lab/$KEY_NAME"
+  DEST="$SSH_DIR/$KEY_NAME"
 
-  VAGRANT_KEY_RAW=$(eval "$VAGRANT ssh-config $VM_NAME" 2>/dev/null | tr -d "\r" | grep IdentityFile | awk '{print $2}')
+  VAGRANT_KEY_RAW=$(eval "\"$VAGRANT\" ssh-config $VM_NAME" 2>/dev/null | tr -d "\r" | grep IdentityFile | awk '{print $2}')
 
   if [ -z "$VAGRANT_KEY_RAW" ]; then
-    echo "⚠️  Não foi possível obter a chave da VM $VM_NAME, pulando..."
+    echo "⚠️  Não foi possível obter a chave da VM $VM_NAME (ela existe no Vagrantfile?), pulando..."
     continue
   fi
 
@@ -52,7 +60,7 @@ for VM in "seaweedfs-node:key_seaweed" "trino-sea-node:key_trino"; do
   CURRENT=$(md5sum "$DEST" 2>/dev/null | awk '{print $1}')
 
   if [ "$CURRENT" = "$EXPECTED" ]; then
-    echo "✅ Chave de $VM_NAME já está atualizada, pulando."
+    echo "✅ Chave de $VM_NAME já está atualizada."
   else
     echo "🔄 Atualizando chave de $VM_NAME..."
     cp "$VAGRANT_KEY" "$DEST"
@@ -61,7 +69,6 @@ for VM in "seaweedfs-node:key_seaweed" "trino-sea-node:key_trino"; do
 done
 
 # 3. Execução do Ansible
-# Certifique-se de que o comando 'ansible-playbook' está instalado no seu Ubuntu/WSL
 if command -v ansible-playbook >/dev/null 2>&1; then
     ansible-playbook -i ansible/inventory/hosts.ini ansible/playbook.yml "$@"
 else

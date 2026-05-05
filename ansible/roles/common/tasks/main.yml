@@ -18,6 +18,7 @@
   loop:
     - { ip: '192.168.56.101', name: 'seaweedfs-node' }
     - { ip: '192.168.56.102', name: 'trino-sea-node' }
+    - { ip: '192.168.56.103', name: 'k8s-sea-node' }
   become: yes
 
 # ==============================================================================
@@ -40,6 +41,12 @@
       - acl
     state: present
     update_cache: yes
+  become: yes
+
+- name: "k8s : Atualizar pip"
+  pip:
+    name: pip
+    state: latest
   become: yes
 
 - name: "common : Instalar ferramentas de diagnóstico de rede"

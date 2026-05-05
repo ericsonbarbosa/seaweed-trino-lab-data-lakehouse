@@ -46,13 +46,13 @@
     seaweedfs_version_tag: "{{ seaweedfs_release.json.tag_name }}"
 
 - name: "seaweed : Verificar se binário já está instalado na versão correta"
-  command: /usr/local/bin/weed version
+  shell: /usr/local/bin/weed version 2>&1
   register: seaweedfs_installed
   failed_when: false
   changed_when: false
 
-- name: "seaweed : Baixar e instalar binário"
-  when: seaweedfs_version_tag not in (seaweedfs_installed.stdout | default(''))
+- name: "seaweed : Bloco de Instalação (Pula se já atualizado)"
+  when: "seaweedfs_version_tag | string not in seaweedfs_installed.stdout | default('')"
   block:
     - name: "seaweed : Download do release"
       get_url:
@@ -79,9 +79,23 @@
       become: yes
 
 # ==============================================================================
-# 3. CONFIGURAÇÃO DO FILER
+# 4. SERVIÇOS SYSTEMD (Apenas Instalação dos Units)
 # ==============================================================================
-- name: "seaweed : Criar diretório de configuração"
+- name: "seaweed : Instalar unit do Master"
+  template:
+    src: master.service.j2
+    dest: /etc/systemd/system/seaweedfs-master.service
+    mode: '0644'
+  become: yes
+
+- name: "seaweed : Instalar unit do Volume"
+  template:
+    src: volume.service.j2
+    dest: /etc/systemd/system/seaweedfs-volume.service
+    mode: '0644'
+  become: yes
+
+- name: "seaweed : Criar diretório de configuração do Filer"
   file:
     path: /etc/seaweedfs
     state: directory
@@ -98,28 +112,6 @@
     group: "{{ seaweedfs_group }}"
     mode: '0644'
   become: yes
-  notify:
-    - "restart seaweedfs-filer"
-    - "restart seaweedfs-s3"
-
-# ==============================================================================
-# 4. SERVIÇOS SYSTEMD
-# ==============================================================================
-- name: "seaweed : Instalar unit do Master"
-  template:
-    src: master.service.j2
-    dest: /etc/systemd/system/seaweedfs-master.service
-    mode: '0644'
-  become: yes
-  notify: "restart seaweedfs-master"
-
-- name: "seaweed : Instalar unit do Volume"
-  template:
-    src: volume.service.j2
-    dest: /etc/systemd/system/seaweedfs-volume.service
-    mode: '0644'
-  become: yes
-  notify: "restart seaweedfs-volume"
 
 - name: "seaweed : Instalar unit do Filer"
   template:
@@ -127,7 +119,43 @@
     dest: /etc/systemd/system/seaweedfs-filer.service
     mode: '0644'
   become: yes
-  notify: "restart seaweedfs-filer"
+
+- name: "seaweed : Criar diretório de configuração do S3"
+  file:
+    path: /etc/seaweedfs
+    state: directory
+    owner: "{{ seaweedfs_user }}"
+    group: "{{ seaweedfs_group }}"
+    mode: '0755'
+  become: yes
+
+- name: "seaweed : Criar arquivo de configuração do S3"
+  copy:
+    dest: /etc/seaweedfs/s3.json
+    owner: "{{ seaweedfs_user }}"
+    group: "{{ seaweedfs_group }}"
+    mode: '0640'
+    content: |
+      {
+        "identities": [
+          {
+            "name": "admin",
+            "credentials": [
+              {
+                "accessKey": "{{ seaweedfs_s3_access_key }}",
+                "secretKey": "{{ seaweedfs_s3_secret_key }}"
+              }
+            ],
+            "actions": [
+              "Admin", "Read", "Write", "List", "Tagging"
+            ]
+          }
+        ],
+        "sts": {
+          "signingKey": "A-Very-Secret-Signing-Key-For-STS" 
+        }
+      }
+  become: yes
 
 - name: "seaweed : Instalar unit do S3 Gateway"
   template:
@@ -135,23 +163,11 @@
     dest: /etc/systemd/system/seaweedfs-s3.service
     mode: '0644'
   become: yes
-  notify: "restart seaweedfs-s3"
 
-# ... (após as tarefas de instalar os units .service)
-
-- name: "seaweed : Recarregar systemd e reiniciar serviços"
+- name: "seaweed : Recarregar daemon do systemd"
   systemd:
     daemon_reload: yes
-    name: seaweedfs-master
-    state: restarted
   become: yes
-
-- name: "seaweed : Aguardar Master estar pronto"
-  wait_for:
-    host: "{{ seaweedfs_master_host }}"
-    port: "{{ seaweedfs_master_port }}"
-    delay: 2
-    timeout: 30
 
 # ==============================================================================
 # 5. INICIALIZAÇÃO EM ORDEM
@@ -159,7 +175,7 @@
 - name: "seaweed : Iniciar e habilitar Master"
   systemd:
     name: seaweedfs-master
-    state: started
+    state: restarted
     enabled: yes
   become: yes
 
@@ -173,7 +189,7 @@
 - name: "seaweed : Iniciar e habilitar Volume"
   systemd:
     name: seaweedfs-volume
-    state: started
+    state: restarted
     enabled: yes
   become: yes
 
@@ -187,7 +203,7 @@
 - name: "seaweed : Iniciar e habilitar Filer"
   systemd:
     name: seaweedfs-filer
-    state: started
+    state: restarted
     enabled: yes
   become: yes
 
@@ -198,9 +214,13 @@
     delay: 3
     timeout: 30
 
+- name: "seaweed : Pausa para estabilização do Filer"
+  pause:
+    seconds: 5
+
 - name: "seaweed : Iniciar e habilitar S3 Gateway"
   systemd:
     name: seaweedfs-s3
-    state: started
+    state: restarted
     enabled: yes
   become: yes

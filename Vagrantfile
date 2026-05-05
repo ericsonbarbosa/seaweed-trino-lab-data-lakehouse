@@ -5,6 +5,7 @@ Vagrant.configure("2") do |config|
   config.vm.define "seaweedfs-node" do |seaweedfs|
     seaweedfs.vm.hostname = "seaweedfs-node"
     seaweedfs.vm.network "private_network", ip: "192.168.56.101"
+    seaweedfs.vm.boot_timeout = 120   # <- Aumenta o tempo de boot para 120 segundos
 
     seaweedfs.vm.provider "virtualbox" do |vb|
       vb.name = "seaweedfs-node"
@@ -23,6 +24,18 @@ Vagrant.configure("2") do |config|
       vb.name = "trino-sea-node"
       vb.memory = 4096
       vb.cpus = 2
+    end
+  end
+
+  # VM 3: Kubernetes Node (K3s)
+  config.vm.define "k8s-node" do |node|
+    node.vm.box = "ubuntu/jammy64"
+    node.vm.hostname = "k8s-node"
+    node.vm.network "private_network", ip: "192.168.56.103"
+    node.vm.provider "virtualbox" do |vb|
+      vb.memory = "2048"
+      vb.cpus = 1
+      vb.name = "k8s-node"
     end
   end
 
