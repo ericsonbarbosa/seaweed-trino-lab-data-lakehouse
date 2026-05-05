@@ -1,0 +1,21 @@
+
+[Unit]
+Description=Hive Metastore
+After=network.target postgresql.service
+
+[Service]
+User=hive
+Group=hive
+Type=simple
+Environment=JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+Environment=HIVE_HOME={{ install_dir }}/hive
+Environment=HADOOP_HEAPSIZE=1024
+ExecStart={{ install_dir }}/hive/bin/hive --service metastore
+Restart=on-failure
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=hive-metastore
+
+[Install]
+WantedBy=multi-user.target

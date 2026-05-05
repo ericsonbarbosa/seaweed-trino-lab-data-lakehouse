@@ -14,6 +14,8 @@
       tags: postgres
     - role: seaweed
       tags: seaweed
+    - role: hive
+      tags: hive
 
 #- name: "Configuração do Motor de Consulta (VM 2)"
 #  hosts: compute

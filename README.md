@@ -1,6 +1,6 @@
 ### Requitements do projeto
 
-Execute para instalar o que é necessário para rodar o projeto.
+Instalação das dependências do projeto:
 ```bash
 ansible-galaxy install -r requirements.yml
 ```
@@ -10,11 +10,11 @@ ansible-galaxy install -r requirements.yml
 
 Abra o seu navegador no Windows e acesse:  
 
-Painel do Master: http://192.168.56.101:9333  (status do cluster e quantos "Volumes" estão ativos.)
+Painel do Master: http://192.168.56.101:9333  (status do cluster e quantos "Volumes" estão ativos.)  
 Interface do Filer: http://192.168.56.101:8888  (Este é o seu "Google Drive" interno)  
 S3 Gateway: http://192.168.56.101:8333 (Deve retornar uma mensagem XML)  
 
-## Retirar o K8 do projeto
+## Caso não faça sentido o K8 para o seu projeto:
 
 1. Remover do ansible/enventory/hosts.ini  
 ```bash

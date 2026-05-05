@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+  <!-- Metastore URI -->
+  <property>
+    <name>hive.metastore.uris</name>
+    <value>thrift://{{ postgres_host }}:{{ hive_metastore_port }}</value>
+  </property>
+
+  <!-- PostgreSQL como backend do Metastore -->
+  <property>
+    <name>javax.jdo.option.ConnectionURL</name>
+    <value>jdbc:postgresql://{{ postgres_host }}:{{ postgres_port }}/{{ postgres_db }}</value>
+  </property>
+  <property>
+    <name>javax.jdo.option.ConnectionDriverName</name>
+    <value>org.postgresql.Driver</value>
+  </property>
+  <property>
+    <name>javax.jdo.option.ConnectionUserName</name>
+    <value>{{ postgres_user }}</value>
+  </property>
+  <property>
+    <name>javax.jdo.option.ConnectionPassword</name>
+    <value>{{ postgres_password }}</value>
+  </property>
+
+  <!-- Warehouse no SeaweedFS S3 -->
+  <property>
+    <name>hive.metastore.warehouse.dir</name>
+    <value>s3a://{{ seaweedfs_s3_warehouse_bucket }}/</value>
+  </property>
+
+  <!-- Configurações S3A para SeaweedFS -->
+  <property>
+    <name>fs.s3a.endpoint</name>
+    <value>{{ seaweedfs_s3_endpoint }}</value>
+  </property>
+  <property>
+    <name>fs.s3a.access.key</name>
+    <value>{{ seaweedfs_s3_access_key }}</value>
+  </property>
+  <property>
+    <name>fs.s3a.secret.key</name>
+    <value>{{ seaweedfs_s3_secret_key }}</value>
+  </property>
+  <property>
+    <name>fs.s3a.path.style.access</name>
+    <value>true</value>
+  </property>
+  <property>
+    <name>fs.s3a.connection.ssl.enabled</name>
+    <value>false</value>
+  </property>
+  <property>
+    <name>fs.s3a.impl</name>
+    <value>org.apache.hadoop.fs.s3a.S3AFileSystem</value>
+  </property>
+
+  <!-- Segurança desabilitada para lab -->
+  <property>
+    <name>hive.security.authorization.enabled</name>
+    <value>false</value>
+  </property>
+  <property>
+    <name>hive.metastore.event.db.notification.api.auth</name>
+    <value>false</value>
+  </property>
+
+</configuration>

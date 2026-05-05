@@ -1,0 +1,6 @@
+---
+- name: "restart hive-metastore"
+  systemd:
+    name: hive-metastore
+    state: restarted
+  become: yes
