@@ -1,0 +1,18 @@
+[Unit]
+Description=Trino Distributed SQL Query Engine
+After=network.target hadoop-hdfs.service
+# 'After' garante a ordem correta
+
+[Service]
+Type=forking
+User=vagrant
+Group=vagrant
+# O launcher do Trino precisa do JAVA_HOME definido
+Environment=JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
+ExecStart=/opt/trino/bin/launcher start
+ExecStop=/opt/trino/bin/launcher stop
+Restart=always
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target

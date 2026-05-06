@@ -1,0 +1,27 @@
+connector.name=hive
+hive.metastore.uri=thrift://{{ hive_metastore_host }}:{{ hive_metastore_port }}
+
+# SeaweedFS S3
+hive.s3.endpoint={{ seaweedfs_s3_endpoint }}
+hive.s3.aws-access-key={{ seaweedfs_s3_access_key }}
+hive.s3.aws-secret-key={{ seaweedfs_s3_secret_key }}
+hive.s3.path-style-access=true
+hive.s3.ssl.enabled=false
+hive.s3.socket-timeout=5m
+
+# Escrita em tabelas externas
+hive.non-managed-table-writes-enabled=true
+
+# Formato e performance
+hive.storage-format=PARQUET
+hive.compression-codec=SNAPPY
+hive.collect-column-statistics-on-write=false
+hive.ignore-corrupted-statistics=true
+
+# Timeouts do Metastore
+hive.metastore.thrift.client.connect-timeout=1m
+hive.metastore.thrift.client.read-timeout=1m
+
+# Limites operacionais
+hive.max-partitions-per-scan=10000
+hive.target-max-file-size=64MB

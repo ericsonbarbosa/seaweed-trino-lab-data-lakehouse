@@ -1,0 +1,13 @@
+---
+trino_version: "442"
+install_dir: "/opt"
+data_dir: "/opt/trino/var"
+
+# Hive Metastore
+hive_metastore_host: "192.168.56.101"
+hive_metastore_port: 9083
+
+# SeaweedFS S3
+seaweedfs_s3_endpoint: "http://192.168.56.101:8333"
+seaweedfs_s3_access_key: "admin"
+seaweedfs_s3_secret_key: "admin_secret"

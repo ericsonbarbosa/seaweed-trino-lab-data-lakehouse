@@ -19,6 +19,7 @@ Vagrant.configure("2") do |config|
     trino.vm.hostname = "trino-sea-node"
     trino.vm.network "private_network", ip: "192.168.56.102"
     trino.vm.network "forwarded_port", guest: 8080, host: 8080
+    trino.vm.boot_timeout = 120
     
     trino.vm.provider "virtualbox" do |vb|
       vb.name = "trino-sea-node"
@@ -32,6 +33,8 @@ Vagrant.configure("2") do |config|
     node.vm.box = "ubuntu/jammy64"
     node.vm.hostname = "k8s-node"
     node.vm.network "private_network", ip: "192.168.56.103"
+    node.vm.boot_timeout = 120 
+    
     node.vm.provider "virtualbox" do |vb|
       vb.memory = "2048"
       vb.cpus = 1

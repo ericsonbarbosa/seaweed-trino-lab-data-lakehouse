@@ -1,0 +1,126 @@
+---
+# ==============================================================================
+# 1. INSTALAÇÃO DO SERVIDOR E CLI
+# ==============================================================================
+- name: "trino : Instalar Java 21"
+  apt:
+    name: openjdk-21-jdk
+    state: present
+    update_cache: yes
+    cache_valid_time: 3600
+  become: yes
+
+- name: "trino : Verificar se o binário do Trino existe localmente"
+  delegate_to: localhost
+  become: no
+  stat:
+    path: "{{ role_path }}/files/trino-server-{{ trino_version }}.tar.gz"
+  register: trino_file
+
+- name: "trino : Validar existência do arquivo"
+  fail:
+    msg: "O binário do Trino não foi encontrado em {{ role_path }}/files/."
+  when: not trino_file.stat.exists
+
+- name: "trino : Enviar e descompactar Servidor"
+  unarchive:
+    src: "trino-server-{{ trino_version }}.tar.gz"
+    dest: "{{ install_dir }}"
+    remote_src: no
+    creates: "{{ install_dir }}/trino-server-{{ trino_version }}"
+  become: yes
+
+- name: "trino : Criar link simbólico"
+  file:
+    src: "{{ install_dir }}/trino-server-{{ trino_version }}"
+    dest: "{{ install_dir }}/trino"
+    state: link
+    force: yes
+  become: yes
+
+- name: "trino : Otimizar RAM removendo plugins desnecessários"
+  shell: |
+    cd {{ install_dir }}/trino/plugin
+    ls -d */ | grep -vE 'hive/|tpch/|memory/' | xargs rm -rf
+  become: yes
+  changed_when: false
+
+- name: "trino : Instalar Trino CLI"
+  get_url:
+    url: "https://repo1.maven.org/maven2/io/trino/trino-cli/{{ trino_version }}/trino-cli-{{ trino_version }}-executable.jar"
+    dest: "/usr/local/bin/trino"
+    mode: '0755'
+  become: yes
+
+# ==============================================================================
+# 2. CONFIGURAÇÕES E CONECTORES
+# ==============================================================================
+- name: "trino : Criar estrutura de diretórios"
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: vagrant
+    group: vagrant
+    mode: '0755'
+  loop:
+    - "{{ install_dir }}/trino/etc/catalog"
+    - "{{ install_dir }}/trino/var"
+  become: yes
+
+- name: "trino : Configurar arquivos do Trino"
+  template:
+    src: "{{ item }}.j2"
+    dest: "{{ install_dir }}/trino/etc/{{ item }}"
+    owner: vagrant
+    group: vagrant
+  loop:
+    - node.properties
+    - jvm.config
+    - config.properties
+  become: yes
+
+- name: "trino : Configurar conector Hive com SeaweedFS S3"
+  template:
+    src: catalog/hive.properties.j2
+    dest: "{{ install_dir }}/trino/etc/catalog/hive.properties"
+    owner: vagrant
+    group: vagrant
+  become: yes
+  notify: restart trino
+
+- name: "trino : Garantir permissões no diretório var"
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: vagrant
+    group: vagrant
+    mode: '0755'
+    recurse: yes
+  loop:
+    - "{{ install_dir }}/trino/var"
+    - "{{ install_dir }}/trino-server-{{ trino_version }}/var"
+  become: yes
+
+# ==============================================================================
+# 3. GERENCIAMENTO PELO SYSTEMD
+# ==============================================================================
+- name: "trino : Configurar serviço Systemd"
+  template:
+    src: trino.service.j2
+    dest: /etc/systemd/system/trino.service
+  become: yes
+
+- name: "trino : Habilitar e iniciar Trino"
+  systemd:
+    name: trino
+    enabled: yes
+    state: started
+    daemon_reload: yes
+  become: yes
+
+- name: "trino : Aguardar Trino abrir porta 8080"
+  wait_for:
+    host: "192.168.56.102"
+    port: 8080
+    delay: 10
+    timeout: 120

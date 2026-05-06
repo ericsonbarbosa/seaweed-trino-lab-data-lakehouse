@@ -1,5 +1,5 @@
 # Testes de Sistema Postgres
-## 1. Listar todas as tabelas do Metastore (incluindo as de sistema)
+## Teste 1 - Listar todas as tabelas do Metastore (incluindo as de sistema)
 
 ```bash
 sudo -u postgres psql -d metastore -c "\dt"
@@ -23,7 +23,7 @@ Você verá algo como:
  public | DELEGATION_TOKENS | table | hive
 ```
 
-## 2. Consultar a versão do Metastore
+## Teste 2 - Consultar a versão do Metastore
 
 ```bash
 sudo -u postgres psql -d metastore -c "SELECT * FROM \"VERSION\";"

@@ -7,7 +7,7 @@
       tags: common
 
 - name: "Configuração do Storage e Catálogo (VM 1)"
-  hosts: storage
+  hosts: seaweed-nodes
   become: yes
   roles:
     - role: postgres
@@ -17,15 +17,15 @@
     - role: hive
       tags: hive
 
-#- name: "Configuração do Motor de Consulta (VM 2)"
-#  hosts: compute
-#  become: yes
-#  roles:
-#    - role: trino
-#      tags: trino
+- name: "Configuração do Motor de Consulta (VM 2)"
+  hosts: trino-nodes
+  become: yes
+  roles:
+    - role: trino
+      tags: trino
 
 - name: "Configuração do Nó Kubernetes (VM 3)"
-  hosts: k8s
+  hosts: k8s-nodes
   become: yes
   roles:
     - role: k8s-seaweed-csi
