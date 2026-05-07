@@ -6,12 +6,27 @@
     - role: common
       tags: common
 
-- name: "Configuração do Storage e Catálogo (VM 1)"
+- name: "Configuração do PostgreSQL (VM 1)"
   hosts: seaweed-nodes
   become: yes
   roles:
     - role: postgres
       tags: postgres
+  post_tasks:
+    - name: "Forçar execução dos handlers pendentes"
+      meta: flush_handlers
+
+    - name: "Aguardar PostgreSQL aceitar conexões externas"
+      wait_for:
+        host: "192.168.56.101"
+        port: 5432
+        delay: 3
+        timeout: 30
+
+- name: "Configuração do SeaweedFS e Hive (VM 1)"
+  hosts: seaweed-nodes
+  become: yes
+  roles:
     - role: seaweed
       tags: seaweed
     - role: hive

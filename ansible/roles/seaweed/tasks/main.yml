@@ -54,7 +54,7 @@
 - name: "seaweed : Bloco de Instalação (Pula se já atualizado)"
   when: "seaweedfs_version_tag | string not in seaweedfs_installed.stdout | default('')"
   block:
-    - name: "seaweed : Download do release"
+    - name: "seaweed : Download do release Seaweed"
       get_url:
         url: "{{ seaweedfs_download_url }}"
         dest: /tmp/seaweedfs.tar.gz

@@ -4,8 +4,12 @@
 Este documento fornece as instruções passo a passo para acessar as plataformas e executar os testes de integração que validam a fluidez dos dados entre o armazenamento (S3), o catálogo de metadados (Hive) e o motor de consulta distribuída (Trino).
 
 ---
+## Teste 1 - Acesse a interface UI do Trino:
 
-## Teste 1 - SeaweedFS-Node (Armazenamento e Metadados)
+Login: admin
+http://192.168.56.102:8080
+
+## Teste 2 - SeaweedFS-Node (Armazenamento e Metadados)
 Este nó contém o **S3** e o **Hive Server/Metastore**.
 
 * **Acesso à VM:** 
@@ -18,7 +22,7 @@ Este nó contém o **S3** e o **Hive Server/Metastore**.
     ```
     *Nota: O comando deve retornar que está ecutando: tcp 0.0.0.0:9083*
 
-## Teste 2 - Trino-Node (Motor de Consulta)
+## Teste 3 - Trino-Node (Motor de Consulta)
 Este nó é responsável pela execução de queries de alta performance sobre os dados do Hadoop.
 
 * **Acesso à VM:**

@@ -43,7 +43,7 @@
     update_cache: yes
   become: yes
 
-- name: "k8s : Atualizar pip"
+- name: "Common : Atualizar pip"
   pip:
     name: pip
     state: latest

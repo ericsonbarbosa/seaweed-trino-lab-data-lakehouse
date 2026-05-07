@@ -4,7 +4,9 @@
 # ==============================================================================
 - name: "trino : Instalar Java 21"
   apt:
-    name: openjdk-21-jdk
+    name:
+      - openjdk-21-jdk
+      - python-is-python3
     state: present
     update_cache: yes
     cache_valid_time: 3600

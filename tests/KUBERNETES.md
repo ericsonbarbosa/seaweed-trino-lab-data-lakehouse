@@ -72,19 +72,7 @@ Retorno esperado:
 sudo k3s kubectl exec pod-teste-escrita -- cat /mnt/lakehouse/status.txt
 ```
 Retorno esperado:  
-***Integracao K3s SeaweedFS***
-
-## Extra: Validação no seaweedfs-node o volume shell:
-```bash
-# Na VM1 (SeaweedFS)
-echo "ls /" | weed shell -master=localhost:9333
-
-# ou 
-http://192.168.56.101:8888/  
-```
-Retorno esperado:  
-***buckets***  
-***topics***  
+***Integracao K3s SeaweedFS***  
 
 ## 🧹 Limpeza dos recursos criados nos testes (K3s + SeaweedFS)
 ### 1. Deletar o Pod de teste
