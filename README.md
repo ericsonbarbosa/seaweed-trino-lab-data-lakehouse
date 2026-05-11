@@ -16,54 +16,88 @@ ansible-galaxy install -r requirements.yml
 | Trino                 | http://192.168.56.102:8080        | Interface web do Trino (login: `admin`, sem senha)                        | 
 
 ## Diagramas
+
+### Caso de Uso
 ```mermaid
-flowchart LR
+flowchart TB
 
-    User["Usuário (SQL)"]
-    K8s["Kubernetes (K3s)"]
-    Trino["Trino"]
-    Hive["Hive Metastore"]
-    Seaweed["SeaweedFS"]
-    PG["PostgreSQL"]
+    %% =========================
+    %% ATORES
+    %% =========================
+    USER["Usuário / Aplicações SQL"]
+    K8S["Kubernetes (K3s)"]
 
-    UC1["Executar consulta SQL"]
-    UC2["Planejar execução (Coordinator)"]
-    UC3["Distribuir tarefas aos Workers"]
-    UC4["Consultar metadados (Thrift)"]
-    UC5["Ler dados via S3 API"]
-    UC6["Escrever dados via S3 API"]
-    UC7["Provisionar volume persistente (PVC)"]
-    UC8["Montar volume via CSI Driver"]
-    UC9["Armazenar blocos de dados"]
-    UC10["Gerenciar volumes (Master)"]
-    UC11["Inicializar schema do Metastore"]
-    UC12["Registrar metadados"]
+    %% =========================
+    %% CAMADA COMPUTE
+    %% =========================
+    subgraph COMPUTE["Camada de Processamento"]
+        TRINO["Trino Coordinator + Workers"]
 
-    User --> UC1
+        UC1["Executar consultas SQL"]
+        UC2["Planejar execução distribuída"]
+        UC3["Ler e escrever dados analíticos"]
 
-    Trino --> UC2
-    Trino --> UC3
-    Trino --> UC4
-    Trino --> UC5
-    Trino --> UC6
+        TRINO --> UC1
+        TRINO --> UC2
+        TRINO --> UC3
+    end
 
-    Hive --> UC11
-    Hive --> UC12
+    %% =========================
+    %% CAMADA METADATA
+    %% =========================
+    subgraph METADATA["Camada de Metadados"]
+        HIVE["Hive Metastore"]
+        PG["PostgreSQL"]
 
-    Seaweed --> UC9
-    Seaweed --> UC10
+        UC4["Consultar metadados"]
+        UC5["Registrar tabelas e schemas"]
 
-    K8s --> UC7
-    K8s --> UC8
+        HIVE --> UC4
+        HIVE --> UC5
+        PG --> UC5
+    end
 
-    PG --> UC12
+    %% =========================
+    %% CAMADA STORAGE
+    %% =========================
+    subgraph STORAGE["Camada de Persistência"]
+        S3["SeaweedFS S3 Gateway"]
+        FILER["SeaweedFS Filer"]
+        MASTER["SeaweedFS Master"]
+        VOLUME["SeaweedFS Volume"]
+
+        UC6["Acessar objetos via S3"]
+        UC7["Provisionar volumes persistentes"]
+        UC8["Gerenciar namespace filesystem"]
+        UC9["Persistir blocos físicos"]
+        UC10["Gerenciar localização dos volumes"]
+
+        S3 --> UC6
+        FILER --> UC7
+        FILER --> UC8
+        VOLUME --> UC9
+        MASTER --> UC10
+    end
+
+    %% =========================
+    %% RELAÇÕES DE USO
+    %% =========================
+    USER --> UC1
 
     UC1 -. include .-> UC2
+    UC2 -. include .-> UC4
     UC2 -. include .-> UC3
-    UC3 -. include .-> UC4
-    UC3 -. include .-> UC5
-    UC6 -. include .-> UC12
+
+    UC3 -. include .-> UC6
+
+    UC4 -. include .-> UC5
+
+    K8S --> UC7
     UC7 -. include .-> UC8
+    UC8 -. include .-> UC9
+
+    UC6 -. include .-> UC9
+    UC9 -. include .-> UC10
 ```
 
 ## Caso não faça sentido o K8 ao seu projeto:
