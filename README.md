@@ -16,28 +16,28 @@ ansible-galaxy install -r requirements.yml
 | Trino                 | http://192.168.56.102:8080        | Interface web do Trino (login: `admin`, sem senha)                        | 
 
 ## Diagramas
-
 ```mermaid
-useCaseDiagram
-    actor "Usuário (SQL)" as User
-    actor "Kubernetes (K3s)" as K8s
-    actor "Trino" as Trino
-    actor "Hive Metastore" as Hive
-    actor "SeaweedFS" as Seaweed
-    actor "PostgreSQL" as PG
+flowchart LR
 
-    usecase "Executar consulta SQL" as UC1
-    usecase "Planejar execução (Coordinator)" as UC2
-    usecase "Distribuir tarefas aos Workers" as UC3
-    usecase "Consultar metadados (Thrift)" as UC4
-    usecase "Ler dados via S3 API" as UC5
-    usecase "Escrever dados via S3 API" as UC6
-    usecase "Provisionar volume persistente (PVC)" as UC7
-    usecase "Montar volume via CSI Driver" as UC8
-    usecase "Armazenar blocos de dados" as UC9
-    usecase "Gerenciar volumes (Master)" as UC10
-    usecase "Inicializar schema do Metastore" as UC11
-    usecase "Registrar metadados" as UC12
+    User["Usuário (SQL)"]
+    K8s["Kubernetes (K3s)"]
+    Trino["Trino"]
+    Hive["Hive Metastore"]
+    Seaweed["SeaweedFS"]
+    PG["PostgreSQL"]
+
+    UC1["Executar consulta SQL"]
+    UC2["Planejar execução (Coordinator)"]
+    UC3["Distribuir tarefas aos Workers"]
+    UC4["Consultar metadados (Thrift)"]
+    UC5["Ler dados via S3 API"]
+    UC6["Escrever dados via S3 API"]
+    UC7["Provisionar volume persistente (PVC)"]
+    UC8["Montar volume via CSI Driver"]
+    UC9["Armazenar blocos de dados"]
+    UC10["Gerenciar volumes (Master)"]
+    UC11["Inicializar schema do Metastore"]
+    UC12["Registrar metadados"]
 
     User --> UC1
 
@@ -58,12 +58,12 @@ useCaseDiagram
 
     PG --> UC12
 
-    UC1 ..> UC2 : include
-    UC2 ..> UC3 : include
-    UC3 ..> UC4 : include
-    UC3 ..> UC5 : include
-    UC6 ..> UC12 : include
-    UC7 ..> UC8 : include
+    UC1 -. include .-> UC2
+    UC2 -. include .-> UC3
+    UC3 -. include .-> UC4
+    UC3 -. include .-> UC5
+    UC6 -. include .-> UC12
+    UC7 -. include .-> UC8
 ```
 
 ## Caso não faça sentido o K8 ao seu projeto:
