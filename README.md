@@ -99,6 +99,78 @@ flowchart TB
     UC6 -. include .-> UC9
     UC9 -. include .-> UC10
 ```
+### Diagrama de Sequência — Trino + Hive + SeaweedFS
+```mermaid
+sequenceDiagram
+    autonumber
+
+    actor User as Usuário SQL
+    participant Trino as Trino Coordinator
+    participant Hive as Hive Metastore
+    participant PG as PostgreSQL
+    participant S3 as SeaweedFS S3 Gateway
+    participant Master as SeaweedFS Master
+    participant Volume as SeaweedFS Volume
+
+    User->>Trino: Envia consulta SQL
+
+    Trino->>Hive: Solicita metadados (Thrift :9083)
+    Hive->>PG: Consulta schemas/tabelas
+    PG-->>Hive: Retorna metadados
+    Hive-->>Trino: Metadados da tabela
+
+    Trino->>S3: Solicita leitura dos objetos (S3 API :8333)
+
+    S3->>Master: Consulta localização dos volumes
+    Master-->>S3: Retorna localização física
+
+    S3->>Volume: Lê blocos de dados
+    Volume-->>S3: Dados retornados
+
+    S3-->>Trino: Arquivos/objetos do Data Lake
+
+    Trino->>Trino: Planeja execução distribuída
+    Trino->>Trino: Executa tarefas nos Workers
+
+    Trino-->>User: Retorna resultado SQL
+```
+
+### Diagrama de Sequência — Kubernetes + SeaweedFS (CSI Driver)
+```mermaid
+sequenceDiagram
+    autonumber
+
+    actor Dev as Desenvolvedor
+    participant K8s as Kubernetes API
+    participant CSI as SeaweedFS CSI Driver
+    participant Filer as SeaweedFS Filer
+    participant Master as SeaweedFS Master
+    participant Volume as SeaweedFS Volume
+    participant Pod as Pod Aplicação
+
+    Dev->>K8s: Cria PersistentVolumeClaim (PVC)
+
+    K8s->>CSI: Solicita provisionamento do volume
+
+    CSI->>Filer: Cria namespace/diretório persistente
+
+    Filer->>Master: Solicita localização dos volumes
+    Master-->>Filer: Retorna volumes disponíveis
+
+    Filer->>Volume: Cria estrutura física
+    Volume-->>Filer: Volume persistente criado
+
+    Filer-->>CSI: Volume provisionado
+    CSI-->>K8s: PersistentVolume disponível
+
+    K8s->>Pod: Monta volume persistente
+
+    Pod->>Filer: Leitura/escrita filesystem
+    Filer->>Volume: Persistência física dos dados
+    Volume-->>Filer: Dados gravados
+
+    Filer-->>Pod: Operação concluída
+```
 
 ## Caso não faça sentido o K8 ao seu projeto:
 
