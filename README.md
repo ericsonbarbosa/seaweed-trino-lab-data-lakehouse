@@ -17,7 +17,6 @@ ansible-galaxy install -r requirements.yml
 
 ## Diagramas
 
-### Caso de Uso
 ```mermaid
 useCaseDiagram
     actor "Usuário (SQL)" as User
@@ -25,6 +24,7 @@ useCaseDiagram
     actor "Trino" as Trino
     actor "Hive Metastore" as Hive
     actor "SeaweedFS" as Seaweed
+    actor "PostgreSQL" as PG
 
     usecase "Executar consulta SQL" as UC1
     usecase "Planejar execução (Coordinator)" as UC2
@@ -33,31 +33,37 @@ useCaseDiagram
     usecase "Ler dados via S3 API" as UC5
     usecase "Escrever dados via S3 API" as UC6
     usecase "Provisionar volume persistente (PVC)" as UC7
-    usecase "Montar volume via CSI driver" as UC8
+    usecase "Montar volume via CSI Driver" as UC8
     usecase "Armazenar blocos de dados" as UC9
-    usecase "Gerenciar localização dos volumes (Master)" as UC10
+    usecase "Gerenciar volumes (Master)" as UC10
     usecase "Inicializar schema do Metastore" as UC11
-    usecase "Registrar metadados (PostgreSQL)" as UC12
+    usecase "Registrar metadados" as UC12
 
     User --> UC1
-    UC1 --> UC2
-    UC2 --> UC3
-    UC3 --> UC4
-    UC3 --> UC5
-    UC4 --> Hive
-    Hive --> UC11
-    Hive --> UC12
-    UC5 --> Seaweed
-    UC6 --> Seaweed
-    Seaweed --> UC9
-    Seaweed --> UC10
-    K8s --> UC7
-    UC7 --> UC8
-    UC8 --> Seaweed
+
     Trino --> UC2
     Trino --> UC3
+    Trino --> UC4
     Trino --> UC5
     Trino --> UC6
+
+    Hive --> UC11
+    Hive --> UC12
+
+    Seaweed --> UC9
+    Seaweed --> UC10
+
+    K8s --> UC7
+    K8s --> UC8
+
+    PG --> UC12
+
+    UC1 ..> UC2 : include
+    UC2 ..> UC3 : include
+    UC3 ..> UC4 : include
+    UC3 ..> UC5 : include
+    UC6 ..> UC12 : include
+    UC7 ..> UC8 : include
 ```
 
 ## Caso não faça sentido o K8 ao seu projeto:
