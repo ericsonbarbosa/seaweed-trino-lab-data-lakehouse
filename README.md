@@ -15,6 +15,51 @@ ansible-galaxy install -r requirements.yml
 | SeaweedFS S3 Gateway  | http://192.168.56.101:8333        | Endpoint compatível com S3 (retorna XML com informações do bucket)        |
 | Trino                 | http://192.168.56.102:8080        | Interface web do Trino (login: `admin`, sem senha)                        | 
 
+## Diagramas
+
+### Caso de Uso
+```mermaid
+useCaseDiagram
+    actor "Usuário (SQL)" as User
+    actor "Kubernetes (K3s)" as K8s
+    actor "Trino" as Trino
+    actor "Hive Metastore" as Hive
+    actor "SeaweedFS" as Seaweed
+
+    usecase "Executar consulta SQL" as UC1
+    usecase "Planejar execução (Coordinator)" as UC2
+    usecase "Distribuir tarefas aos Workers" as UC3
+    usecase "Consultar metadados (Thrift)" as UC4
+    usecase "Ler dados via S3 API" as UC5
+    usecase "Escrever dados via S3 API" as UC6
+    usecase "Provisionar volume persistente (PVC)" as UC7
+    usecase "Montar volume via CSI driver" as UC8
+    usecase "Armazenar blocos de dados" as UC9
+    usecase "Gerenciar localização dos volumes (Master)" as UC10
+    usecase "Inicializar schema do Metastore" as UC11
+    usecase "Registrar metadados (PostgreSQL)" as UC12
+
+    User --> UC1
+    UC1 --> UC2
+    UC2 --> UC3
+    UC3 --> UC4
+    UC3 --> UC5
+    UC4 --> Hive
+    Hive --> UC11
+    Hive --> UC12
+    UC5 --> Seaweed
+    UC6 --> Seaweed
+    Seaweed --> UC9
+    Seaweed --> UC10
+    K8s --> UC7
+    UC7 --> UC8
+    UC8 --> Seaweed
+    Trino --> UC2
+    Trino --> UC3
+    Trino --> UC5
+    Trino --> UC6
+```
+
 ## Caso não faça sentido o K8 ao seu projeto:
 
 ### 1. Remover do ansible/enventory/hosts.ini  
