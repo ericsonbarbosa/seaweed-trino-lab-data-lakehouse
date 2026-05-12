@@ -1,9 +1,46 @@
-### Requitements do projeto
+## Requitements do projeto
 
 Instalação das dependências do projeto:
 ```bash
 ansible-galaxy install -r requirements.yml
 ```
+---
+
+## Arquitetura IaC
+seaweed-trino-lab-data-lakehouse/
+├── ansible/
+│   ├── inventory/
+│   │   └── hosts.ini              # IPs das VMs e grupos Ansible
+│   │
+│   ├── roles/
+│   │   ├── common/                # Configurações básicas (rede, pacotes, utilitários)
+│   │   ├── seaweed/               # SeaweedFS (Master, Volume, Filer e S3)
+│   │   ├── postgres/              # Banco de metadados do Hive
+│   │   ├── hive/                  # Hive Metastore + Hadoop minimalista
+│   │   ├── trino/                 # Engine SQL distribuída
+│   │   └── k3s/                   # Kubernetes leve + CSI Driver (opcional)
+│   │
+│   ├── ansible.cfg                # Ajustes do Ansible
+│   └── playbook.yml               # Orquestração principal
+│
+├── tests/                         # Scripts de validação do laboratório
+│   ├── trino-test.md
+|		├── kubernetes-test.md
+|		├── postgres-test.md
+│   ├── seaweed-test.md
+│   └── hive-test.md
+│
+├── docs/                          # Diagramas e documentação técnica
+│   ├── arquitetura/
+│   ├── fluxogramas/
+│   └── kubernetes/
+│
+├── Vagrantfile                    # Provisionamento das VMs locais
+├── setup.sh                       # Execução automatizada do laboratório
+├── destroy.sh                     # Destruição do ambiente
+├── .gitignore                     # Exclusão de arquivos temporários
+└── README.md                      # Guia técnico do projeto
+
 ---
 
 ## Verificação dos serviços SeaweedFS
