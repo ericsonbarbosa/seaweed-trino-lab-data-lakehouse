@@ -8,8 +8,6 @@ ansible-galaxy install -r requirements.yml
 
 ## Arquitetura IaC
 
-## Arquitetura IaC
-
 ```text
 seaweed-trino-lab-data-lakehouse/
 ├── ansible/
