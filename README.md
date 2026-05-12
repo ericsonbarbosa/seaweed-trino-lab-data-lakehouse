@@ -7,6 +7,10 @@ ansible-galaxy install -r requirements.yml
 ---
 
 ## Arquitetura IaC
+
+## Arquitetura IaC
+
+```text
 seaweed-trino-lab-data-lakehouse/
 ├── ansible/
 │   ├── inventory/
@@ -25,8 +29,8 @@ seaweed-trino-lab-data-lakehouse/
 │
 ├── tests/                         # Scripts de validação do laboratório
 │   ├── trino-test.md
-|		├── kubernetes-test.md
-|		├── postgres-test.md
+│   ├── kubernetes-test.md
+│   ├── postgres-test.md
 │   ├── seaweed-test.md
 │   └── hive-test.md
 │
@@ -40,6 +44,7 @@ seaweed-trino-lab-data-lakehouse/
 ├── destroy.sh                     # Destruição do ambiente
 ├── .gitignore                     # Exclusão de arquivos temporários
 └── README.md                      # Guia técnico do projeto
+```
 
 ---
 
